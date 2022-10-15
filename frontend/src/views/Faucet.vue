@@ -16,7 +16,7 @@
         field#faucet-address(
           type='text'
           v-model='fields.address'
-          placeholder='Testnet address'
+          placeholder='Secret Network Mainnet address'
           size="lg")
         form-msg(name='Address' type='required' v-if='!$v.fields.address.required')
         form-msg(name='Address' type='bech32' :body="bech32error" v-else-if='!$v.fields.address.bech32Validate')

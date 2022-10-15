@@ -3,15 +3,13 @@
   tm-cookie-consent
   .top-bar
     .left
-      .key mainnet:
+      .key Mainnet Secret Network:
       .value {{ config.chain }}
-    //- .right
-    //-   a(href="https://explorecosmos.network" target="_blank") explorer #[i.material-icons assessment]
-  //- .logo
-  //-   img(src="~assets/logo.png" width="270" height="311")
+    .right
+      a(href="https://secretnodes.com/secret" target="_blank") Chain explorer #[i.material-icons assessment]
   router-view
   notifications(:notifications='notifications' theme='cosmos')
-  #bottom &copy; 2018 Interchain Foundation
+  #bottom &copy; 2018 Interchain Foundation & 2022 Secret Saturn
 </template>
 
 
