@@ -3,7 +3,7 @@
   tm-cookie-consent
   .top-bar
     .left
-      .key testnet:
+      .key mainnet:
       .value {{ config.chain }}
     //- .right
     //-   a(href="https://explorecosmos.network" target="_blank") explorer #[i.material-icons assessment]

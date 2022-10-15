@@ -22,7 +22,7 @@
         form-msg(name='Address' type='bech32' :body="bech32error" v-else-if='!$v.fields.address.bech32Validate')
       form-group
         btn(v-if='sending' value='Sending...' disabled color="primary" size="lg")
-        btn(v-else @click='onSubmit' value="Send me tokens" color="primary" size="lg" icon="send")
+        btn(v-else @click='onSubmit' value="Grant me tx fees" color="primary" size="lg" icon="send")
   section-join
   section-links
 </template>
@@ -89,7 +89,7 @@ export default {
           this.sending = false;
           this.$store.commit("notify", {
             title: "Successfully Sent",
-            body: `Sent tokens to ${this.fields.address}`
+            body: `Granted fee to ${this.fields.address}`
           });
           this.resetForm();
         })
@@ -97,7 +97,7 @@ export default {
           this.sending = false;
           this.$store.commit("notifyError", {
             title: "Error Sending",
-            body: `An error occurred while trying to send: "${err.message}"`
+            body: `An error occurred while trying to grant fee: "${err.message}"`
           });
         });
     },

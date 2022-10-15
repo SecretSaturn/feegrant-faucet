@@ -1,6 +1,6 @@
-# Cosmos Testnet Faucet
+# Secret Feegrant Faucet
 
-This faucet app allows anyone who passes a captcha to request tokens for a Cosmos account address.
+This faucet app allows anyone who passes a captcha to request a fee grant for a Seccret account address.
 
 ## How to deploy a faucet
 
@@ -13,28 +13,21 @@ This faucet app allows anyone who passes a captcha to request tokens for a Cosmo
         - Site key: `6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI`
         - Secret key: `6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe`
 
-3. Install [secretcli](https://github.com/enigmampc/SecretNetwork/releases) on the server. `secretcli`'s version has to be compatible with the testnet.
+3. Install [secretcli](https://github.com/enigmampc/SecretNetwork/releases) on the server. `secretcli`'s version has to be compatible with the mainnet.
 
-4. Configure `secretcli`:
+4. Create the the faucet account on the machine that is going to run the faucet.
     ```
-    sudo secretcli config indent true
-    sudo secretcli config keyring-backend test
-    sudo secretcli config trust-node true
+    secretcli keys add <name of the account>
     ```
 
-3. Create the the faucet account on the machine that is going to run the faucet.
-    ```
-    secretcli keys add <name of the account> --keyring-backend=test
-    ```
+5. Make sure the faucet account have funds. The faucet basically performs a `tx send` for every token request, so make sure the faucet account have enough tokens (more tokens could be added later by sending more funds to the faucet account).
 
-4. Make sure the faucet account have funds. The faucet basically performs a `tx send` for every token request, so make sure the faucet account have enough tokens (more tokens could be added later by sending more funds to the faucet account).
-
-5. Copy the `.env` template to the `/frontend` directory
+6. Copy the `.env` template to the `/frontend` directory
     ```
     cp .env.template ./frontend/.env
     ```
 
-6. Change the `.env` parameters as you see fit. Parameter description:
+7. Change the `.env` parameters as you see fit. Parameter description:
     - `VUE_APP_CHAIN` - Should hold the `chain-id`
     - `FAUCET_CHAIN` - Should hold the `chain-id`
     - `VUE_APP_RECAPTCHA_SITE_KEY` - Google reCAPTCHA Site Key
@@ -47,16 +40,15 @@ This faucet app allows anyone who passes a captcha to request tokens for a Cosmo
     - `LOCAL_RUN` - Option for local run for debug. Not supported for now, should leave as `false`.
     - Other parameters should be left unchanged.
 
-7. Build:
+8. Build:
     ```
     make all
     ```
 
-8. Deploy to server. You can do it manually by copying the `bin/` directory or run `make deploy` (make sure to change the makefile to match your server's address i.e. `scp -r ./bin user-name@your.domain:~/`)
+9. Deploy to server. You can do it manually by copying the `bin/` directory or run `make deploy` (make sure to change the makefile to match your server's address i.e. `scp -r ./bin user-name@your.domain:~/`)
 
-10. (optional) Configure [Caddy](https://caddyserver.com/docs/). You can use [this](https://github.com/enigmampc/testnet-faucet/blob/master/caddy/Caddyfile) as a simple template.
 
-11. (optional) You can start the server by running the `./path/to/bin/faucet` binary. It is recommended to create a systemd unit. For example (change parameters for your own deployment):
+10. (optional) You can start the server by running the `./path/to/bin/faucet` binary. It is recommended to create a systemd unit. For example (change parameters for your own deployment):
     ```
     [Unit]
     Description=Faucet web server
@@ -64,8 +56,8 @@ This faucet app allows anyone who passes a captcha to request tokens for a Cosmo
 
     [Service]
     Type=simple
-    WorkingDirectory=/home/ubuntu/testnet-faucet/bin
-    ExecStart=/home/ubuntu/testnet-faucet/bin/faucet
+    WorkingDirectory=/home/ubuntu/feegrant-faucet/bin
+    ExecStart=/home/ubuntu/feegrant-faucet/bin/faucet
     User=ubuntu
     Restart=always
     StartLimitInterval=0

@@ -14,10 +14,10 @@
       title="Validator Chat"
       subtitle="#cosmos_validators")
     list-item(
-      href="https://explorecosmos.network"
+      href="https://secretnodes.com/secret"
       target="_blank"
-      title="Testnet Explorer"
-      subtitle="explorecosmos.network")
+      title="mainnet Explorer"
+      subtitle="secretnodes.com")
     list-item(
       href="https://cosmos.network"
       target="_blank"
