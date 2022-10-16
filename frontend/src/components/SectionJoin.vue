@@ -2,9 +2,7 @@
 .section
   .section-header
     h1 Don't have a Secret Network mainnet address?
-    p There's two ways to get one. The first is by using Voyager, the crypto wallet for Cosmos. If you know command-line-fu, you can also generate an address with the Cosmos SDK.
-  .section-main
-    btn(type="anchor" href="https://cosmos.network/testnet" value="Join the latest testnet" size="lg" target="_blank" icon="wifi_tethering")
+    p There's two ways to get one. The first is by using Keplr, the crypto wallet for Secret. If you know command line, you can also generate an address with the secretcli.
 </template>
 
 <script>

@@ -2,7 +2,6 @@ all: backend frontend
 	cp backend/faucet bin/
 	cp frontend/.env bin/
 	cp frontend/.env.local bin/
-	cp account_setup.sh bin/
 	cp -r frontend/dist bin/
 
 .PHONY: backend

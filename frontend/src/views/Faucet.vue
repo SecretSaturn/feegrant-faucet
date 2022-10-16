@@ -16,13 +16,13 @@
         field#faucet-address(
           type='text'
           v-model='fields.address'
-          placeholder='Secret Network Mainnet address'
+          placeholder='Secret Network address (secret1...)'
           size="lg")
         form-msg(name='Address' type='required' v-if='!$v.fields.address.required')
         form-msg(name='Address' type='bech32' :body="bech32error" v-else-if='!$v.fields.address.bech32Validate')
       form-group
         btn(v-if='sending' value='Sending...' disabled color="primary" size="lg")
-        btn(v-else @click='onSubmit' value="Grant me tx fees" color="primary" size="lg" icon="send")
+        btn(v-else @click='onSubmit' value="Grant fee" color="primary" size="lg" icon="send")
   section-join
   section-links
 </template>
@@ -88,7 +88,7 @@ export default {
         .then(() => {
           this.sending = false;
           this.$store.commit("notify", {
-            title: "Successfully Sent",
+            title: "Successfully Granted Fee",
             body: `Granted fee to ${this.fields.address}`
           });
           this.resetForm();
@@ -130,7 +130,7 @@ export default {
 @import '~variables'
 
 #faucet
-  max-width 40rem
+  max-width 50rem
   width 100%
   margin 0 auto
 

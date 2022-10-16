@@ -3,13 +3,13 @@
   tm-cookie-consent
   .top-bar
     .left
-      .key Mainnet Secret Network:
+      .key Secret Network version: 
       .value {{ config.chain }}
     .right
       a(href="https://secretnodes.com/secret" target="_blank") Chain explorer #[i.material-icons assessment]
   router-view
   notifications(:notifications='notifications' theme='cosmos')
-  #bottom &copy; 2018 Interchain Foundation & 2022 Secret Saturn
+  #bottom &copy; 2018 Interchain Foundation & 2022 🪐 𝕊ecret 𝕊aturn
 </template>
 
 
@@ -60,7 +60,6 @@ img
     display flex
     padding 0 1rem
   .key
-    text-transform: lowercase
     margin-right 0.5rem
   .value
     font-weight bold
