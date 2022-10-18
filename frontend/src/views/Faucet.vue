@@ -88,15 +88,15 @@ export default {
         .then(() => {
           this.sending = false;
           this.$store.commit("notify", {
-            title: "Successfully Granted Fee",
-            body: `Granted fee to ${this.fields.address}`
+            title: "Successfully granted fee",
+            body: `Granted a fee of 0.1 SCRT to ${this.fields.address}`
           });
           this.resetForm();
         })
         .catch(err => {
           this.sending = false;
           this.$store.commit("notifyError", {
-            title: "Error Sending",
+            title: "Error sending",
             body: `An error occurred while trying to grant fee: "${err.message}"`
           });
         });

@@ -132,7 +132,6 @@ func goExecute(encodedAddress string) (cmd *exec.Cmd, pipeOut io.ReadCloser, pip
 }
 
 func getCmd(encodedAddress string) *exec.Cmd {
-	// split command into command and args
 
 	t := time.Now().AddDate(0, 0, 1)
 	expiration := t.Format(time.RFC3339)
