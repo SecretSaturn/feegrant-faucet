@@ -177,19 +177,26 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 	// decode JSON response from front end
 	decoder := json.NewDecoder(request.Body)
 	decoderErr := decoder.Decode(&claim)
+
 	if decoderErr != nil {
-		panic(decoderErr)
+		fmt.Println("Error executing command:", decoderErr)
+		http.Error(w, decoderErr.Error(), 500)
+		return
 	}
 
 	// make sure address is bech32
 	readableAddress, decodedAddress, decodeErr := bech32.DecodeAndConvert(claim.Address)
 	if decodeErr != nil {
-		panic(decodeErr)
+		fmt.Println("Error executing command:", decodeErr)
+		http.Error(w, decodeErr.Error(), 500)
+		return
 	}
 	// re-encode the address in bech32
 	encodedAddress, encodeErr := bech32.ConvertAndEncode(readableAddress, decodedAddress)
 	if encodeErr != nil {
-		panic(encodeErr)
+		fmt.Println("Error executing command:", encodeErr)
+		http.Error(w, encodeErr.Error(), 500)
+		return
 	}
 
 	err := executeCmd(encodedAddress)
