@@ -13,14 +13,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dpapathanasiou/go-recaptcha"
 	"github.com/joho/godotenv"
 	"github.com/tendermint/tmlibs/bech32"
-	"github.com/tomasen/realip"
 )
 
 var chain string
-var recaptchaSecretKey string
 var amountFaucet string
 var key string
 var node string
@@ -51,7 +48,6 @@ func main() {
 	}
 
 	chain = getEnv("FAUCET_CHAIN")
-	recaptchaSecretKey = getEnv("FAUCET_RECAPTCHA_SECRET_KEY")
 	amountFaucet = getEnv("FAUCET_AMOUNT_FAUCET")
 	key = getEnv("FAUCET_KEY")
 	node = getEnv("FAUCET_NODE")
@@ -60,8 +56,6 @@ func main() {
 	gasPrices = getEnv("GAS_PRICES")
 	gas = getEnv("GAS")
 	memo = getEnv("MEMO")
-
-	recaptcha.Init(recaptchaSecretKey)
 
 	fs := http.FileServer(http.Dir("dist"))
 	http.Handle("/", fs)
@@ -198,24 +192,12 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 		panic(encodeErr)
 	}
 
-	// make sure captcha is valid
-	clientIP := realip.FromRequest(request)
-	captchaResponse := claim.Response
-	captchaPassed, captchaErr := recaptcha.Confirm(clientIP, captchaResponse)
-	if captchaErr != nil {
-		panic(captchaErr)
-	}
+	err := executeCmd(encodedAddress)
 
-	// send the coins!
-	if captchaPassed {
-
-		err := executeCmd(encodedAddress)
-
-		// If command fails, reutrn an error
-		if err != nil {
-			fmt.Println("Error executing command:", err)
-			http.Error(w, err.Error(), 500)
-		}
+	// If command fails, reutrn an error
+	if err != nil {
+		fmt.Println("Error executing command:", err)
+		http.Error(w, err.Error(), 500)
 	}
 
 	return

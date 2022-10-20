@@ -1,7 +1,5 @@
 github.com/btcsuite/btcutil v0.0.0-20180524032703-d4cc87b86016 h1:BsZAJgCuMsoFZMZNyj7Lyt6sS8anDhedVrAMCOyPMIo=
 github.com/btcsuite/btcutil v0.0.0-20180524032703-d4cc87b86016/go.mod h1:+5NJ2+qvTyV9exUAL/rxXi3DcLg2Ts+ymUAY5y4NvMg=
-github.com/dpapathanasiou/go-recaptcha v0.0.0-20180330231321-0e9736be20f9 h1:idQBau+oR00QOjGQRLXAcevF0wORZwVqXVNIrpsydLM=
-github.com/dpapathanasiou/go-recaptcha v0.0.0-20180330231321-0e9736be20f9/go.mod h1:eovtlS/D2AGk8vy2a9sO4XzOyHMHb8jM+WPsf9pkgFo=
 github.com/joho/godotenv v1.2.0 h1:vGTvz69FzUFp+X4/bAkb0j5BoLC+9bpqTWY8mjhA9pc=
 github.com/joho/godotenv v1.2.0/go.mod h1:7hK45KPybAkOC6peb+G5yklZfMxEjkZhHbwpqxOKXbg=
 github.com/tendermint/tmlibs v0.9.0-rc0.0.20180607034639-640af0205d98 h1:kAmE0qMK/+8KvxymzAVkOL2BZM+ogYKqRsRTxqK9ZSc=

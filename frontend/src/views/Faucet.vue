@@ -3,14 +3,6 @@
   .section
     faucet-header
     form(v-on:submit.prevent='onSubmit', method='post')
-      form-group(:error='$v.fields.response.$error'
-        field-id='faucet-response' field-label='Captcha')
-        vue-recaptcha#faucet-response(
-          ref="recaptcha"
-          @verify="onVerify"
-          @expired="onExpired"
-          :sitekey="config.recaptchaSiteKey")
-        form-msg(name='Captcha' type='required' v-if='!$v.fields.response.required')
       form-group(:error='$v.fields.address.$error'
         field-id='faucet-address' field-label='Send To')
         field#faucet-address(
@@ -29,7 +21,6 @@
 
 <script>
 import axios from "axios";
-import VueRecaptcha from "vue-recaptcha";
 import { mapGetters } from "vuex";
 import { required } from "vuelidate/lib/validators";
 import b32 from "../scripts/b32";
@@ -50,14 +41,12 @@ export default {
     FormMsg,
     // SectionJoin,
     // SectionLinks,
-    VueRecaptcha
   },
   computed: {
     ...mapGetters(["config"])
   },
   data: () => ({
     fields: {
-      response: "",
       address: ""
     },
     sending: false
@@ -65,15 +54,7 @@ export default {
   methods: {
     resetForm() {
       this.fields.address = "";
-      this.fields.response = "";
-      this.$refs.recaptcha.reset();
       this.$v.$reset();
-    },
-    onVerify(response) {
-      this.fields.response = response;
-    },
-    onExpired() {
-      this.$refs.recaptcha.reset();
     },
     async onSubmit() {
       this.$v.$touch();
@@ -83,20 +64,19 @@ export default {
       axios
         .post(this.config.claimUrl, {
           address: this.fields.address,
-          response: this.fields.response
         })
         .then(() => {
           this.sending = false;
           this.$store.commit("notify", {
-            title: "Successfully granted fee",
-            body: `Granted a fee of 0.1 SCRT to ${this.fields.address}`
+            title: "Successfully Granted Fee",
+            body: `Granted fee of 0.1 SCRT to ${this.fields.address}`
           });
           this.resetForm();
         })
         .catch(err => {
           this.sending = false;
           this.$store.commit("notifyError", {
-            title: "Error sending",
+            title: "Error Sending",
             body: `An error occurred while trying to grant fee: "${err.message}"`
           });
         });
@@ -119,7 +99,7 @@ export default {
           required,
           bech32Validate: this.bech32Validate
         },
-        response: { required }
+        response: {}
       }
     };
   }
