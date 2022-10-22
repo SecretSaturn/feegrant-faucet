@@ -332,14 +332,15 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 
 	errorJSON := ErrorJSON{}
 
-	if jsonErr != nil {
+	if jsonErr != nil || allowanceJSON.Allowance.Allowance.Expiration.IsZero() {
 		jsonErr := json.Unmarshal(body, &errorJSON)
+
 		if (errorJSON.Code == 2) && (errorJSON.Message == "rpc error: code = Internal desc = fee-grant not found: unauthorized: unknown request") {
 			fmt.Println("No active Fee Grant")
 
 			grantErr := executeCmd(encodedAddress, "grant", 0)
 
-			// If command fails, reutrn an error
+			// If command fails, return an error
 			if grantErr != nil {
 				fmt.Println("Error executing command:", grantErr)
 				http.Error(w, grantErr.Error(), 500)
