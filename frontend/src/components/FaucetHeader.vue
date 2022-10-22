@@ -4,11 +4,13 @@
 
   p Use this faucet to get a fee grant for your Secret Network wallet. 
   
-  p This is still in beta atm as we get wallets and workflow ready.
+  p This is still in beta at the moments as we get wallets and workflow ready.
 
   p A Fee Grant gives you enough SCRT (0.1 SCRT) to pay for transactions to fund your wallet and can only be used for paying transaction fees.
 
   p It automatically expires after 1 day, after which you can get a new fee grant. 
+  
+  p To use the fee grant, please add the address secret1tq6y8waegggp4fv2fcxk3zmpsmlfadyc7lsd69 to the "granter" flag in your Fina Cash wallet.
 </template>
 
 <script>
