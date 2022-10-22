@@ -1,7 +1,10 @@
 <template lang="pug">
 .section-header
   h1 Secret Network Fee Grant Faucet
+
   p Use this faucet to get a fee grant for your Secret Network wallet. 
+  
+  p This is still in beta atm as we get wallets and workflow ready.
 
   p A Fee Grant gives you enough SCRT (0.1 SCRT) to pay for transactions to fund your wallet and can only be used for paying transaction fees.
 

@@ -77,7 +77,7 @@ export default {
           this.sending = false;
           this.$store.commit("notifyError", {
             title: "Error Sending",
-            body: `An error occurred while trying to grant fee: "${err.message}"`
+            body: `An error occurred while trying to grant fee with status code ${err.response.status} : ${err.response.data}`
           });
         });
     },
