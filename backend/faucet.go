@@ -278,9 +278,6 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 
 	var claim claimStruct
 
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Headers", "*")
-
 	if request.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
 		return
