@@ -18,10 +18,13 @@ import (
 	"github.com/tendermint/tmlibs/bech32"
 )
 
+var cli_name string
 var chain string
 var amountFaucet string
 var key string
-var node string
+var rpc_node string
+var lcd_node string
+var faucet_addr string
 var publicURL string
 var gasPrices string
 var gasRevoke string
@@ -70,7 +73,14 @@ type ErrorJSON struct {
 	Details []interface{} `json:"details"`
 }
 
+type txOutput struct {
+	Height string
+	Txhash string
+	RawLog string
+}
+
 func getEnv(key string) string {
+
 	if value, ok := os.LookupEnv(key); ok {
 		fmt.Println("Found", key)
 		return value
@@ -81,15 +91,19 @@ func getEnv(key string) string {
 }
 
 func main() {
+
 	err := godotenv.Load(".env.local", ".env")
 	if err != nil {
 		log.Fatal("Error loading .env file", err)
 	}
 
 	chain = getEnv("FAUCET_CHAIN")
+	cli_name = getEnv("CLI_NAME")
 	amountFaucet = getEnv("FAUCET_AMOUNT_FAUCET")
 	key = getEnv("FAUCET_KEY")
-	node = getEnv("FAUCET_NODE")
+	rpc_node = getEnv("RPC_NODE")
+	lcd_node = getEnv("LCD_NODE")
+	faucet_addr = getEnv("FAUCET_ADDRESS")
 	publicURL = getEnv("FAUCET_PUBLIC_URL")
 	localStr := getEnv("LOCAL_RUN")
 	gasPrices = getEnv("GAS_PRICES")
@@ -120,12 +134,6 @@ func main() {
 func executeCmd(encodedAddress string, AllowanceType string, sequence int) (e error) {
 	cmd, stdout, _ := goExecute(encodedAddress, AllowanceType, sequence)
 
-	var txOutput struct {
-		Height string
-		Txhash string
-		RawLog string
-	}
-
 	output := ""
 	buf := bufio.NewReader(stdout)
 	for {
@@ -137,12 +145,14 @@ func executeCmd(encodedAddress string, AllowanceType string, sequence int) (e er
 		output += string(line)
 	}
 
-	if err := json.Unmarshal([]byte(output), &txOutput); err != nil {
+	txOut := txOutput{}
+
+	if err := json.Unmarshal([]byte(output), &txOut); err != nil {
 		fmt.Printf("Error: '%s' for parsing the following: '%s'\n", err, output)
 		return fmt.Errorf("server error. can't send tokens")
 	}
 
-	fmt.Println("Granted Fee. txhash:", txOutput.Txhash)
+	fmt.Println("Granted Fee. txhash:", txOut.Txhash)
 
 	if err := cmd.Wait(); err != nil {
 		log.Fatal(err)
@@ -152,6 +162,7 @@ func executeCmd(encodedAddress string, AllowanceType string, sequence int) (e er
 }
 
 func goExecute(encodedAddress string, AllowanceType string, sequence int) (cmd *exec.Cmd, pipeOut io.ReadCloser, pipeErr io.ReadCloser) {
+
 	cmd = getCmd(encodedAddress, AllowanceType, sequence)
 
 	pipeOut, _ = cmd.StdoutPipe()
@@ -166,13 +177,14 @@ func goExecute(encodedAddress string, AllowanceType string, sequence int) (cmd *
 }
 
 func getCmd(encodedAddress string, AllowanceType string, sequence int) *exec.Cmd {
+
 	if AllowanceType == "grant" {
 		t := time.Now().AddDate(0, 0, 1)
 		expiration := t.Format(time.RFC3339)
 
 		var command []string
 
-		command = append(command, "secretcli")
+		command = append(command, cli_name)
 		command = append(command, "tx")
 		command = append(command, "feegrant")
 		command = append(command, "grant")
@@ -182,7 +194,7 @@ func getCmd(encodedAddress string, AllowanceType string, sequence int) *exec.Cmd
 		command = append(command, fmt.Sprintf("--spend-limit=%v", amountFaucet))
 		command = append(command, fmt.Sprintf("--expiration=%v", expiration))
 		command = append(command, fmt.Sprintf("--chain-id=%v", chain))
-		command = append(command, fmt.Sprintf("--node=%v", node))
+		command = append(command, fmt.Sprintf("--node=%v", rpc_node))
 		command = append(command, "--output=json")
 		command = append(command, "-y")
 		command = append(command, fmt.Sprintf("--gas=%v", gasGrant))
@@ -205,7 +217,7 @@ func getCmd(encodedAddress string, AllowanceType string, sequence int) *exec.Cmd
 
 		var command []string
 
-		command = append(command, "secretcli")
+		command = append(command, cli_name)
 		command = append(command, "tx")
 		command = append(command, "feegrant")
 		command = append(command, "revoke")
@@ -213,7 +225,7 @@ func getCmd(encodedAddress string, AllowanceType string, sequence int) *exec.Cmd
 		command = append(command, encodedAddress)
 		command = append(command, fmt.Sprintf("--gas-prices=%v", gasPrices))
 		command = append(command, fmt.Sprintf("--chain-id=%v", chain))
-		command = append(command, fmt.Sprintf("--node=%v", node))
+		command = append(command, fmt.Sprintf("--node=%v", rpc_node))
 		command = append(command, "--output=json")
 		command = append(command, "-y")
 		command = append(command, fmt.Sprintf("--gas=%v", gasRevoke))
@@ -230,9 +242,6 @@ func getCmd(encodedAddress string, AllowanceType string, sequence int) *exec.Cmd
 		cmd = exec.Command(command[0], command[1:]...)
 
 		return cmd
-
-	} else {
-		return nil
 	}
 
 	return nil
@@ -240,7 +249,7 @@ func getCmd(encodedAddress string, AllowanceType string, sequence int) *exec.Cmd
 
 func queryNode(w http.ResponseWriter, query string) (body []byte) {
 
-	url := "http://lcd.mainnet.secretsaturn.net/" + query
+	url := lcd_node + query
 
 	httpClient := http.Client{
 		Timeout: time.Second * 2, // Timeout after 2 seconds
@@ -315,7 +324,7 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 
 	//check if a fee grant exists
 
-	query := "cosmos/feegrant/v1beta1/allowance/secret1tq6y8waegggp4fv2fcxk3zmpsmlfadyc7lsd69/" + encodedAddress
+	query := "/cosmos/feegrant/v1beta1/allowance/" + faucet_addr + "/" + encodedAddress
 
 	body := queryNode(w, query)
 
@@ -333,6 +342,7 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 		jsonErr := json.Unmarshal(body, &errorJSON)
 
 		if (errorJSON.Code == 2) && (errorJSON.Message == "rpc error: code = Internal desc = fee-grant not found: unauthorized: unknown request") {
+
 			fmt.Println("No active Fee Grant")
 
 			grantErr := executeCmd(encodedAddress, "grant", 0)
@@ -356,9 +366,10 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 	parsedDate := allowanceJSON.Allowance.Allowance.Expiration
 
 	if time.Now().After(parsedDate) {
+
 		fmt.Println("Existing Fee Grant expired")
 
-		query := "auth/accounts/" + "secret1tq6y8waegggp4fv2fcxk3zmpsmlfadyc7lsd69"
+		query := "/auth/accounts/" + faucet_addr
 
 		body := queryNode(w, query)
 
