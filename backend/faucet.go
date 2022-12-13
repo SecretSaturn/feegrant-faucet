@@ -341,7 +341,7 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 	if jsonErr != nil || allowanceJSON.Allowance.Allowance.Expiration.IsZero() {
 		jsonErr := json.Unmarshal(body, &errorJSON)
 
-		if (errorJSON.Code == 2) && (errorJSON.Message == "rpc error: code = Internal desc = fee-grant not found: unauthorized: unknown request") {
+		if (errorJSON.Code == 13) && (errorJSON.Message == "fee-grant not found: unauthorized") {
 
 			fmt.Println("No active Fee Grant")
 
@@ -364,6 +364,8 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 	}
 
 	parsedDate := allowanceJSON.Allowance.Allowance.Expiration
+
+	fmt.Println(parsedDate)
 
 	if time.Now().After(parsedDate) {
 

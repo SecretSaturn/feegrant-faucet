@@ -25,7 +25,7 @@ export default {
     copy() {
         navigator.clipboard.writeText("secret1tq6y8waegggp4fv2fcxk3zmpsmlfadyc7lsd69");
         this.$store.commit("notify", {
-            title: "Successfully Granted Fee",
+            title: "Copied address",
             body:  `Copied fee granter address secret1tq6y8waegggp4fv2fcxk3zmpsmlfadyc7lsd69 to clipboard`
           });
     }
