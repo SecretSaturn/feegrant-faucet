@@ -338,10 +338,14 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 
 	errorJSON := ErrorJSON{}
 
-	if jsonErr != nil || allowanceJSON.Allowance.Allowance.Expiration.IsZero() {
+	parsedDate := allowanceJSON.Allowance.Allowance.Expiration
+
+	fmt.Println(parsedDate)
+
+	if jsonErr != nil || parsedDate.IsZero() {
 		jsonErr := json.Unmarshal(body, &errorJSON)
 
-		if (errorJSON.Code == 13) && (errorJSON.Message == "fee-grant not found: unauthorized") {
+		if ((errorJSON.Code == 13) && (errorJSON.Message == "fee-grant not found: unauthorized")) || parsedDate.IsZero() {
 
 			fmt.Println("No active Fee Grant")
 
@@ -353,7 +357,6 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 				http.Error(w, grantErr.Error(), 500)
 				return
 			}
-
 			return
 		}
 		if jsonErr != nil {
@@ -362,10 +365,6 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 			return
 		}
 	}
-
-	parsedDate := allowanceJSON.Allowance.Allowance.Expiration
-
-	fmt.Println(parsedDate)
 
 	if time.Now().After(parsedDate) {
 
