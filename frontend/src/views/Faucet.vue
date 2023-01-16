@@ -9,6 +9,8 @@
           type='text'
           v-model='fields.address'
           placeholder='Secret Network address (secret1...)'
+          data-whip-005-type="account"
+          data-whip-005-chains="cosmos:secret-4"
           size="lg")
         form-msg(name='Address' type='required' v-if='!$v.fields.address.required')
         form-msg(name='Address' type='bech32' :body="bech32error" v-else-if='!$v.fields.address.bech32Validate')
