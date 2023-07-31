@@ -11,7 +11,6 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -21,12 +20,14 @@ import (
 var cli_name string
 var chain string
 var amountFaucet string
+var denomFaucet string
 var key string
 var rpc_node string
 var lcd_node string
 var faucet_addr string
 var publicURL string
-var gasPrices string
+var gasPriceAmount string
+var gasPriceDenom string
 var gasRevoke string
 var gasGrant string
 var memo string
@@ -99,14 +100,16 @@ func main() {
 
 	chain = getEnv("FAUCET_CHAIN")
 	cli_name = getEnv("CLI_NAME")
-	amountFaucet = getEnv("FAUCET_AMOUNT_FAUCET")
+	amountFaucet = getEnv("FAUCET_AMOUNT")
+	denomFaucet = getEnv("FAUCET_DENOM")
 	key = getEnv("FAUCET_KEY")
 	rpc_node = getEnv("RPC_NODE")
 	lcd_node = getEnv("LCD_NODE")
 	faucet_addr = getEnv("FAUCET_ADDRESS")
 	publicURL = getEnv("FAUCET_PUBLIC_URL")
 	localStr := getEnv("LOCAL_RUN")
-	gasPrices = getEnv("GAS_PRICES")
+	gasPriceAmount = getEnv("GAS_PRICE_AMOUNT")
+	gasPriceDenom = getEnv("GAS_PRICE_DENOM")
 	gasRevoke = getEnv("GAS_REVOKE")
 	gasGrant = getEnv("GAS_GRANT")
 	memo = getEnv("MEMO")
@@ -131,8 +134,8 @@ func main() {
 
 }
 
-func executeCmd(encodedAddress string, AllowanceType string, sequence int) (e error) {
-	cmd, stdout, _ := goExecute(encodedAddress, AllowanceType, sequence)
+func executeCmd(encodedAddress string, AllowanceType string) (e error) {
+	cmd, stdout, _ := goExecute(encodedAddress, AllowanceType)
 
 	output := ""
 	buf := bufio.NewReader(stdout)
@@ -161,9 +164,9 @@ func executeCmd(encodedAddress string, AllowanceType string, sequence int) (e er
 	return nil
 }
 
-func goExecute(encodedAddress string, AllowanceType string, sequence int) (cmd *exec.Cmd, pipeOut io.ReadCloser, pipeErr io.ReadCloser) {
+func goExecute(encodedAddress string, AllowanceType string) (cmd *exec.Cmd, pipeOut io.ReadCloser, pipeErr io.ReadCloser) {
 
-	cmd = getCmd(encodedAddress, AllowanceType, sequence)
+	cmd = getCmd(encodedAddress, AllowanceType)
 
 	pipeOut, _ = cmd.StdoutPipe()
 	pipeErr, _ = cmd.StderrPipe()
@@ -176,70 +179,52 @@ func goExecute(encodedAddress string, AllowanceType string, sequence int) (cmd *
 	return cmd, pipeOut, pipeErr
 }
 
-func getCmd(encodedAddress string, AllowanceType string, sequence int) *exec.Cmd {
+func getCmd(encodedAddress string, AllowanceType string) *exec.Cmd {
+
+	t := time.Now().AddDate(0, 0, 1)
+	expiration := t.Format(time.RFC3339)
 
 	if AllowanceType == "grant" {
-		t := time.Now().AddDate(0, 0, 1)
-		expiration := t.Format(time.RFC3339)
 
-		var command []string
+		gasGrantInt, err1 := strconv.ParseFloat(gasGrant, 64)
+		gasPriceAmountInt, err2 := strconv.ParseFloat(gasPriceAmount, 64)
 
-		command = append(command, cli_name)
-		command = append(command, "tx")
-		command = append(command, "feegrant")
-		command = append(command, "grant")
-		command = append(command, key)
-		command = append(command, encodedAddress)
-		command = append(command, fmt.Sprintf("--gas-prices=%v", gasPrices))
-		command = append(command, fmt.Sprintf("--spend-limit=%v", amountFaucet))
-		command = append(command, fmt.Sprintf("--expiration=%v", expiration))
-		command = append(command, fmt.Sprintf("--chain-id=%v", chain))
-		command = append(command, fmt.Sprintf("--node=%v", rpc_node))
-		command = append(command, "--output=json")
-		command = append(command, "-y")
-		command = append(command, fmt.Sprintf("--gas=%v", gasGrant))
-		command = append(command, "--keyring-backend=test")
-		command = append(command, fmt.Sprintf("--note=%v", memo))
-
-		if sequence != 0 {
-			command = append(command, fmt.Sprintf("--sequence=%v", sequence))
+		if err1 != nil || err2 != nil {
+			log.Fatal(err1, err2)
 		}
 
+		mulResult := gasGrantInt * gasPriceAmountInt
+		mulResultStr := strconv.Itoa(int(mulResult))
+
+		var command = fmt.Sprintf("echo '{\"body\":{\"messages\":[{\"@type\":\"/cosmos.feegrant.v1beta1.MsgGrantAllowance\",\"granter\":\"%v\",\"grantee\":\"%v\",\"allowance\":{\"@type\":\"/cosmos.feegrant.v1beta1.BasicAllowance\",\"spend_limit\":[{\"denom\":\"%v\",\"amount\":\"%v\"}],\"expiration\":\"%v\"}}],\"memo\":\"%v\",\"timeout_height\":\"0\",\"extension_options\":[],\"non_critical_extension_options\":[]},\"auth_info\":{\"signer_infos\":[],\"fee\":{\"amount\":[{\"denom\":\"uscrt\",\"amount\":\"%v\"}],\"gas_limit\":\"%v\",\"payer\":\"\",\"granter\":\"\"}},\"signatures\":[]}' | sudo %v tx sign - --from=%v --chain-id=%v --output=json --keyring-backend=test | %v tx broadcast - --node=%v", faucet_addr, encodedAddress, denomFaucet, amountFaucet, expiration, memo, mulResultStr, gasGrant, cli_name, key, chain, cli_name, rpc_node)
+
 		fmt.Println(time.Now().UTC().Format(time.RFC3339), encodedAddress, "[1]")
-		fmt.Println("Executing cmd:", strings.Join(command[:], " "))
+		fmt.Println("Executing cmd:", command)
 
 		var cmd *exec.Cmd
-		cmd = exec.Command(command[0], command[1:]...)
+		cmd = exec.Command("bash", "-c", command)
 
 		return cmd
 
-	} else if AllowanceType == "revoke" {
+	} else if AllowanceType == "revoke+grant" {
 
-		var command []string
+		gasGrantInt, err1 := strconv.ParseFloat(gasGrant, 64)
+		gasPriceAmountInt, err2 := strconv.ParseFloat(gasPriceAmount, 64)
 
-		command = append(command, cli_name)
-		command = append(command, "tx")
-		command = append(command, "feegrant")
-		command = append(command, "revoke")
-		command = append(command, key)
-		command = append(command, encodedAddress)
-		command = append(command, fmt.Sprintf("--gas-prices=%v", gasPrices))
-		command = append(command, fmt.Sprintf("--chain-id=%v", chain))
-		command = append(command, fmt.Sprintf("--node=%v", rpc_node))
-		command = append(command, "--output=json")
-		command = append(command, "-y")
-		command = append(command, fmt.Sprintf("--gas=%v", gasRevoke))
-		command = append(command, "--keyring-backend=test")
-
-		if sequence != 0 {
-			command = append(command, fmt.Sprintf("--sequence=%v", sequence))
+		if err1 != nil || err2 != nil {
+			log.Fatal(err1, err2)
 		}
 
+		mulResult := gasGrantInt * gasPriceAmountInt
+		mulResultStr := strconv.Itoa(int(mulResult))
+
+		var command = fmt.Sprintf("echo '{\"body\":{\"messages\":[{\"@type\":\"/cosmos.feegrant.v1beta1.MsgRevokeAllowance\",\"granter\":\"%v\",\"grantee\":\"%v\"},{\"@type\":\"/cosmos.feegrant.v1beta1.MsgGrantAllowance\",\"granter\":\"%v\",\"grantee\":\"%v\",\"allowance\":{\"@type\":\"/cosmos.feegrant.v1beta1.BasicAllowance\",\"spend_limit\":[{\"denom\":\"%v\",\"amount\":\"%v\"}],\"expiration\":\"%v\"}}],\"memo\":\"%v\",\"timeout_height\":\"0\",\"extension_options\":[],\"non_critical_extension_options\":[]},\"auth_info\":{\"signer_infos\":[],\"fee\":{\"amount\":[{\"denom\":\"uscrt\",\"amount\":\"%v\"}],\"gas_limit\":\"%v\",\"payer\":\"\",\"granter\":\"\"}},\"signatures\":[]}' | sudo %v tx sign - --from=%v --chain-id=%v --output=json --keyring-backend=test | %v tx broadcast - --node=%v", faucet_addr, encodedAddress, faucet_addr, encodedAddress, denomFaucet, amountFaucet, expiration, memo, mulResultStr, gasGrant, cli_name, key, chain, cli_name, rpc_node)
+
 		fmt.Println(time.Now().UTC().Format(time.RFC3339), encodedAddress, "[1]")
-		fmt.Println("Executing cmd:", strings.Join(command[:], " "))
+		fmt.Println("Executing cmd:", command)
 
 		var cmd *exec.Cmd
-		cmd = exec.Command(command[0], command[1:]...)
+		cmd = exec.Command("bash", "-c", command)
 
 		return cmd
 	}
@@ -349,7 +334,7 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 
 			fmt.Println("No active Fee Grant")
 
-			grantErr := executeCmd(encodedAddress, "grant", 0)
+			grantErr := executeCmd(encodedAddress, "grant")
 
 			// If command fails, return an error
 			if grantErr != nil {
@@ -370,47 +355,12 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 
 		fmt.Println("Existing Fee Grant expired")
 
-		query := "/auth/accounts/" + faucet_addr
+		revokeErr := executeCmd(encodedAddress, "revoke+grant")
 
-		body := queryNode(w, query)
-
-		if body == nil {
-			return
-		}
-
-		accountsJSON := AccountsJSON{}
-
-		jsonErr := json.Unmarshal(body, &accountsJSON)
-
-		if jsonErr != nil {
-			fmt.Println("Error executing command:", jsonErr)
-			http.Error(w, jsonErr.Error(), 500)
-			return
-		}
-
-		sequence, convErr := strconv.Atoi(accountsJSON.Result.Value.Sequence)
-
-		if convErr != nil {
-			fmt.Println("Error executing command:", convErr)
-			http.Error(w, convErr.Error(), 500)
-			return
-		}
-
-		revokeErr := executeCmd(encodedAddress, "revoke", sequence)
-
-		// If command fails, reutrn an error
+		// If command fails, return an error
 		if revokeErr != nil {
 			fmt.Println("Error executing command:", revokeErr)
 			http.Error(w, revokeErr.Error(), 500)
-			return
-		}
-
-		grantErr := executeCmd(encodedAddress, "grant", sequence+1)
-
-		// If command fails, reutrn an error
-		if grantErr != nil {
-			fmt.Println("Error executing command:", grantErr)
-			http.Error(w, grantErr.Error(), 500)
 			return
 		}
 
