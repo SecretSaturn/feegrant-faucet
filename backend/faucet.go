@@ -17,14 +17,14 @@ import (
 	"github.com/tendermint/tmlibs/bech32"
 )
 
-var cli_name string
+var cliName string
 var chain string
 var amountFaucet string
 var denomFaucet string
 var key string
-var rpc_node string
-var lcd_node string
-var faucet_addr string
+var rpcNode string
+var lcdNode string
+var faucetAddr string
 var publicURL string
 var gasPriceAmount string
 var gasPriceDenom string
@@ -99,13 +99,13 @@ func main() {
 	}
 
 	chain = getEnv("FAUCET_CHAIN")
-	cli_name = getEnv("CLI_NAME")
+	cliName = getEnv("CLI_NAME")
 	amountFaucet = getEnv("FAUCET_AMOUNT")
 	denomFaucet = getEnv("FAUCET_DENOM")
 	key = getEnv("FAUCET_KEY")
-	rpc_node = getEnv("RPC_NODE")
-	lcd_node = getEnv("LCD_NODE")
-	faucet_addr = getEnv("FAUCET_ADDRESS")
+	rpcNode = getEnv("RPC_NODE")
+	lcdNode = getEnv("LCD_NODE")
+	faucetAddr = getEnv("FAUCET_ADDRESS")
 	publicURL = getEnv("FAUCET_PUBLIC_URL")
 	localStr := getEnv("LOCAL_RUN")
 	gasPriceAmount = getEnv("GAS_PRICE_AMOUNT")
@@ -196,7 +196,7 @@ func getCmd(encodedAddress string, AllowanceType string) *exec.Cmd {
 		mulResult := gasGrantInt * gasPriceAmountInt
 		mulResultStr := strconv.Itoa(int(mulResult))
 
-		var command = fmt.Sprintf("echo '{\"body\":{\"messages\":[{\"@type\":\"/cosmos.feegrant.v1beta1.MsgGrantAllowance\",\"granter\":\"%v\",\"grantee\":\"%v\",\"allowance\":{\"@type\":\"/cosmos.feegrant.v1beta1.BasicAllowance\",\"spend_limit\":[{\"denom\":\"%v\",\"amount\":\"%v\"}],\"expiration\":\"%v\"}}],\"memo\":\"%v\",\"timeout_height\":\"0\",\"extension_options\":[],\"non_critical_extension_options\":[]},\"auth_info\":{\"signer_infos\":[],\"fee\":{\"amount\":[{\"denom\":\"uscrt\",\"amount\":\"%v\"}],\"gas_limit\":\"%v\",\"payer\":\"\",\"granter\":\"\"}},\"signatures\":[]}' | sudo %v tx sign - --from=%v --chain-id=%v --output=json --keyring-backend=test | %v tx broadcast - --node=%v", faucet_addr, encodedAddress, denomFaucet, amountFaucet, expiration, memo, mulResultStr, gasGrant, cli_name, key, chain, cli_name, rpc_node)
+		var command = fmt.Sprintf("echo '{\"body\":{\"messages\":[{\"@type\":\"/cosmos.feegrant.v1beta1.MsgGrantAllowance\",\"granter\":\"%v\",\"grantee\":\"%v\",\"allowance\":{\"@type\":\"/cosmos.feegrant.v1beta1.BasicAllowance\",\"spend_limit\":[{\"denom\":\"%v\",\"amount\":\"%v\"}],\"expiration\":\"%v\"}}],\"memo\":\"%v\",\"timeout_height\":\"0\",\"extension_options\":[],\"non_critical_extension_options\":[]},\"auth_info\":{\"signer_infos\":[],\"fee\":{\"amount\":[{\"denom\":\"uscrt\",\"amount\":\"%v\"}],\"gas_limit\":\"%v\",\"payer\":\"\",\"granter\":\"\"}},\"signatures\":[]}' | sudo %v tx sign - --from=%v --chain-id=%v --output=json --keyring-backend=test | %v tx broadcast - --node=%v", faucetAddr, encodedAddress, denomFaucet, amountFaucet, expiration, memo, mulResultStr, gasGrant, cliName, key, chain, cliName, rpcNode)
 
 		fmt.Println(time.Now().UTC().Format(time.RFC3339), encodedAddress, "[1]")
 		fmt.Println("Executing cmd:", command)
@@ -218,7 +218,7 @@ func getCmd(encodedAddress string, AllowanceType string) *exec.Cmd {
 		mulResult := gasGrantInt * gasPriceAmountInt
 		mulResultStr := strconv.Itoa(int(mulResult))
 
-		var command = fmt.Sprintf("echo '{\"body\":{\"messages\":[{\"@type\":\"/cosmos.feegrant.v1beta1.MsgRevokeAllowance\",\"granter\":\"%v\",\"grantee\":\"%v\"},{\"@type\":\"/cosmos.feegrant.v1beta1.MsgGrantAllowance\",\"granter\":\"%v\",\"grantee\":\"%v\",\"allowance\":{\"@type\":\"/cosmos.feegrant.v1beta1.BasicAllowance\",\"spend_limit\":[{\"denom\":\"%v\",\"amount\":\"%v\"}],\"expiration\":\"%v\"}}],\"memo\":\"%v\",\"timeout_height\":\"0\",\"extension_options\":[],\"non_critical_extension_options\":[]},\"auth_info\":{\"signer_infos\":[],\"fee\":{\"amount\":[{\"denom\":\"uscrt\",\"amount\":\"%v\"}],\"gas_limit\":\"%v\",\"payer\":\"\",\"granter\":\"\"}},\"signatures\":[]}' | sudo %v tx sign - --from=%v --chain-id=%v --output=json --keyring-backend=test | %v tx broadcast - --node=%v", faucet_addr, encodedAddress, faucet_addr, encodedAddress, denomFaucet, amountFaucet, expiration, memo, mulResultStr, gasGrant, cli_name, key, chain, cli_name, rpc_node)
+		var command = fmt.Sprintf("echo '{\"body\":{\"messages\":[{\"@type\":\"/cosmos.feegrant.v1beta1.MsgRevokeAllowance\",\"granter\":\"%v\",\"grantee\":\"%v\"},{\"@type\":\"/cosmos.feegrant.v1beta1.MsgGrantAllowance\",\"granter\":\"%v\",\"grantee\":\"%v\",\"allowance\":{\"@type\":\"/cosmos.feegrant.v1beta1.BasicAllowance\",\"spend_limit\":[{\"denom\":\"%v\",\"amount\":\"%v\"}],\"expiration\":\"%v\"}}],\"memo\":\"%v\",\"timeout_height\":\"0\",\"extension_options\":[],\"non_critical_extension_options\":[]},\"auth_info\":{\"signer_infos\":[],\"fee\":{\"amount\":[{\"denom\":\"uscrt\",\"amount\":\"%v\"}],\"gas_limit\":\"%v\",\"payer\":\"\",\"granter\":\"\"}},\"signatures\":[]}' | sudo %v tx sign - --from=%v --chain-id=%v --output=json --keyring-backend=test | %v tx broadcast - --node=%v", faucetAddr, encodedAddress, faucetAddr, encodedAddress, denomFaucet, amountFaucet, expiration, memo, mulResultStr, gasGrant, cliName, key, chain, cliName, rpcNode)
 
 		fmt.Println(time.Now().UTC().Format(time.RFC3339), encodedAddress, "[1]")
 		fmt.Println("Executing cmd:", command)
@@ -234,7 +234,7 @@ func getCmd(encodedAddress string, AllowanceType string) *exec.Cmd {
 
 func queryNode(w http.ResponseWriter, query string) (body []byte) {
 
-	url := lcd_node + query
+	url := lcdNode + query
 
 	httpClient := http.Client{
 		Timeout: time.Second * 2, // Timeout after 2 seconds
@@ -309,7 +309,7 @@ func getCoinsHandler(w http.ResponseWriter, request *http.Request) {
 
 	//check if a fee grant exists
 
-	query := "/cosmos/feegrant/v1beta1/allowance/" + faucet_addr + "/" + encodedAddress
+	query := "/cosmos/feegrant/v1beta1/allowance/" + faucetAddr + "/" + encodedAddress
 
 	body := queryNode(w, query)
 
